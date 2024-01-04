@@ -14,10 +14,11 @@ const LOG_FILE_PATH = process.env.LOG_FILE_PATH;
 let lastFile = "";
 
 function main() {
-  cron.schedule(CRON_SCHEDULE, () => {
-    console.log("Cron job started");
-    execute();
-  });
+  // cron.schedule(CRON_SCHEDULE, () => {
+  //   console.log("Cron job started");
+  //   execute();
+  // });
+  execute();
 }
 
 function execute() {
@@ -97,20 +98,23 @@ async function processFile(data, file) {
     }
   );
   const { token } = await result.json();
-
+  console.log("output", output);
   // Upload data
-  const result2 = await fetch({
-    method: "POST",
-    url: "https://elegantdesigners.info/elegant/api/machine-performance/report",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: {
-      data: JSON.stringify(output),
-    },
-  });
+  const result2 = await fetch(
+    "https://elegantdesigners.info/elegant/api/machine-performance/report",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        data: output,
+      }),
+    }
+  );
   const { success, message } = await result2.json();
+  console.log(success, message);
   return { success, message };
 }
 
