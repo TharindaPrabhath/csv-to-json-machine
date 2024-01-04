@@ -14,11 +14,10 @@ const LOG_FILE_PATH = process.env.LOG_FILE_PATH;
 let lastFile = "";
 
 function main() {
-  // cron.schedule(CRON_SCHEDULE, () => {
-  //   console.log("Cron job started");
-  //   execute();
-  // });
-  execute();
+  cron.schedule(CRON_SCHEDULE, () => {
+    console.log("Cron job started");
+    execute();
+  });
 }
 
 function execute() {
@@ -98,7 +97,6 @@ async function processFile(data, file) {
     }
   );
   const { token } = await result.json();
-  console.log("output", output);
   // Upload data
   const result2 = await fetch(
     "https://elegantdesigners.info/elegant/api/machine-performance/report",
@@ -114,7 +112,6 @@ async function processFile(data, file) {
     }
   );
   const { success, message } = await result2.json();
-  console.log(success, message);
   return { success, message };
 }
 
