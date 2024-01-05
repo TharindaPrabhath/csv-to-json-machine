@@ -1,8 +1,14 @@
 require("dotenv").config();
+// Dependencies
+// The original host environment contained node v13 which did not support the replaceAll method and also didn't contain
+// fetch API. So I had to install node-fetch explicitly.
+const fetch = require("node-fetch");
 const fs = require("fs");
 const cron = require("node-cron");
 
 // Constants
+// In the original host environment, the .env vars were not loaded for some reason.
+// So I had to hardcode the values here.
 const CSV_DIR_PATH = process.env.CSV_DIR_PATH;
 const EMAIL = process.env.EMAIL;
 const PASSWORD = process.env.PASSWORD;
@@ -25,8 +31,16 @@ function execute() {
   const files = fs.readdirSync(CSV_DIR_PATH);
   const csvFiles = files.filter((file) => file.endsWith(".csv"));
   const latestFile = csvFiles.reduce((prev, curr) => {
-    const prevDate = new Date(prev.split(" ")[1]);
-    const currDate = new Date(curr.split(" ")[1]);
+    const prevDate = new Date(
+      prev.split(" ")[0].replace("EFFICIENCY_REPORT_", "")
+    );
+    prevDate.setHours(prev.split(" ")[1].split("-")[0]);
+
+    const currDate = new Date(
+      curr.split(" ")[0].replace("EFFICIENCY_REPORT_", "")
+    );
+    currDate.setHours(curr.split(" ")[1].split("-")[0]);
+
     return prevDate > currDate ? prev : curr;
   }, csvFiles[0]);
 
@@ -38,6 +52,8 @@ function execute() {
 
   // Update the last file reference
   lastFile = latestFile;
+
+  console.log("latestFile", latestFile);
 
   fs.readFile(`${CSV_DIR_PATH}/${latestFile}`, "utf8", async (err, data) => {
     const { success, message } = await processFile(data);
@@ -56,7 +72,7 @@ function execute() {
   });
 }
 
-async function processFile(data, file) {
+async function processFile(data) {
   const lines = data.split("\n");
   const output = [];
 
